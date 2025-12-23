@@ -1,5 +1,8 @@
-name: Build Wasm
-on: 
+name: Build AssemblyScript Wasm
+
+on:
+  push:
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
@@ -7,13 +10,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20' # Pre-installed on GitHub runners
-          
-      - name: Install and Build
+          node-version: '20'
+
+      - name: Install AssemblyScript and Build
         run: |
-          npm install
-          npm run asbuild
+          # Initialize a dummy package if it doesn't exist
+          npm init -y
+          # Install the AssemblyScript compiler
+          npm install assemblyscript
+          # Compile the local index.ts to index.wasm
+          # --optimize for performance, --stats to see the size
+          npx asc index.ts -o index.wasm --optimize
+
+      - name: Upload Wasm Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: wasm-binary
+          path: index.wasm
