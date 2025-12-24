@@ -9,7 +9,7 @@ jobs:
       - uses: actions/checkout@v4
       - run: npm install assemblyscript
       - run: |
-         npx asc index.ts -o cwt.wasm \
+         npx asc cwt.ts -o cwt.wasm \
           --optimize \
           --initialMemory 8192 \
           --maximumMemory 8192 \
