@@ -1,0 +1,39 @@
+name: Build WASM
+on:
+  workflow_dispatch:
+    inputs:
+      source:
+        description: 'Source file'
+        required: true
+        default: 'index.ts'
+      output:
+        description: 'Output file'
+        required: true
+        default: 'cwt.wasm'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - name: Install AssemblyScript
+        run: npm install --save-dev assemblyscript
+      - name: Compile WASM
+        run: |
+          npx asc ${{ github.event.inputs.source }} \
+            --outFile ${{ github.event.inputs.output }} \
+            --initialMemory 8500 \
+            --maximumMemory 8500 \
+            --importMemory \
+            --runtime stub \
+            --use abort= \
+            --optimize
+            
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: wasm-build
+          path: ${{ github.event.inputs.output }}
