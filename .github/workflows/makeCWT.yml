@@ -19,11 +19,12 @@ jobs:
 
       - name: Compile WASM
         run: |
-          npx asc cwt.ts \
-            --target release \
-            --outFile cwt.wasm \
+         npx asc diag.ts \
+            --outFile diag.wasm \
             --initialMemory 8500 \
             --maximumMemory 8500 \
+            --importMemory \
+            --runtime stub \
             --use abort= \
             --optimize
             
