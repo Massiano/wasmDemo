@@ -9,10 +9,14 @@ jobs:
       - uses: actions/checkout@v4
       - run: npm install assemblyscript
       - run: |
-          npx asc index.ts -o cwt.wasm \
-          --optimize --noExportRuntime --runtime stub \
-          --initialMemory 8192 --maximumMemory 8192 \
-          --explicitStart
+         npx asc index.ts -o cwt.wasm \
+          --optimize \
+          --initialMemory 8192 \
+          --maximumMemory 8192 \
+          --noExportRuntime \
+          --runtime stub \
+          --exportRuntime \
+          --exportStart _start
       - uses: actions/upload-artifact@v4
         with:
           name: cwt-wasm
