@@ -1,7 +1,6 @@
 name: Build CWT  Wasm
 on:
   workflow_dispatch:
-  
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -24,6 +23,7 @@ jobs:
           npx asc cwt.ts \
             -o cwt.wasm \
             -O3 \
+            --use Math=JSMath
             --noAssert \
             --runtime stub \
             --memoryBase 0 \
