@@ -1,23 +1,36 @@
-name: Build CWT
-on: 
-  workflow_dispatch:
+name: Build CWT WASM
+
+on:
+  workflow-dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - run: npm install assemblyscript
-      - run: |
-         npx asc cwt.ts -o cwt.wasm \
-          --optimize \
-          --initialMemory 8192 \
-          --maximumMemory 8192 \
-          --noExportRuntime \
-          --runtime stub \
-          --exportRuntime \
-          --exportStart _start
-      - uses: actions/upload-artifact@v4
+      - uses: actions/checkout@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
         with:
-          name: cwt-wasm
+          node-version: 18
+
+      - name: Install AssemblyScript
+        run: npm install --save-dev assemblyscript
+
+      - name: Compile WASM
+        run: |
+          # Calculate pages: 500MB / 64KB per page = ~8000 pages
+          # We set max memory to slightly higher to be safe (e.g., 8500 pages)
+          npx asc cwt.ts \
+            --target release \
+            --outFile cwt.wasm \
+            --initialMemory 8500 \
+            --maximumMemory 8500 \
+            --use abort= \
+            --optimize
+            
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: wasm-build
           path: cwt.wasm
