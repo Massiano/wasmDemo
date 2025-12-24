@@ -1,8 +1,6 @@
 name: Build DEMO Wasm
 
 on:
-  push:
-    branches: [ main ]
   workflow_dispatch:
 
 jobs:
