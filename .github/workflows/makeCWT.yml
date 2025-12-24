@@ -1,28 +1,17 @@
-name: Build CWT WASM
+name: Build CWT
 on: [push]
-
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - name: Install Dependencies
-        run: npm install assemblyscript
-      - name: Compile
-        run: |
+      - run: npm install assemblyscript
+      - run: |
           npx asc index.ts -o cwt.wasm \
-          --optimize \
-          --initialMemory 8000 \
-          --maximumMemory 8000 \
-          --noExportRuntime \
-          --runtime stub \
+          --optimize --noExportRuntime --runtime stub \
+          --initialMemory 8192 --maximumMemory 8192 \
           --explicitStart
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
-          name: cwt-binary
+          name: cwt-wasm
           path: cwt.wasm
