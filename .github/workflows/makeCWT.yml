@@ -19,7 +19,7 @@ jobs:
 
       - name: Compile WASM
         run: |
-         npx asc diag.ts \
+         npx asc cwt.ts \
             --outFile diag.wasm \
             --initialMemory 8500 \
             --maximumMemory 8500 \
