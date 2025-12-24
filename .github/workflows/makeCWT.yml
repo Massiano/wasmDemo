@@ -1,4 +1,4 @@
-name: Build AssemblyScript Wasm
+name: Build CWT Wasm
 
 on:
   workflow_dispatch:
