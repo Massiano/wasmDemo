@@ -23,7 +23,7 @@ jobs:
           npx asc cwt.ts \
             -o cwt.wasm \
             -O3 \
-            --use Math=JSMath
+            --use Math=JSMath \
             --noAssert \
             --runtime stub \
             --memoryBase 0 \
