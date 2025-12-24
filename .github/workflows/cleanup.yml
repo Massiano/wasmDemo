@@ -1,33 +1,57 @@
-name: Nuke All Finished Runs
+name: Delete All Workflow Runs
 
 on:
   workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (list runs without deleting)'
+        required: false
+        default: 'false'
+        type: boolean
 
 jobs:
-  delete_all:
+  delete-runs:
     runs-on: ubuntu-latest
     permissions:
       actions: write
-      contents: read
     steps:
-      - name: Delete all completed runs
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          echo "Starting deletion of ALL finished runs..."
-          
-          # Loop until no runs remain
-          while true; do
-            # List run IDs that are 'completed' (limit 100 at a time to prevent API timeouts)
-            run_ids=$(gh run list --status completed --limit 100 --json databaseId --jq '.[].databaseId')
+      - name: Delete workflow runs
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const dryRun = '${{ inputs.dry_run }}' === 'true';
             
-            # Break the loop if no runs are found
-            if [ -z "$run_ids" ]; then
-              echo "No more finished runs found."
-              break
-            fi
+            let deleted = 0;
+            let page = 1;
             
-            echo "Deleting batch of runs..."
-            # Use xargs to delete the found IDs
-            echo "$run_ids" | xargs -I {} gh run delete "{}"
-          done
+            while (true) {
+              const runs = await github.rest.actions.listWorkflowRunsForRepo({
+                owner,
+                repo,
+                per_page: 100,
+                page
+              });
+              
+              if (runs.data.workflow_runs.length === 0) break;
+              
+              for (const run of runs.data.workflow_runs) {
+                if (dryRun) {
+                  console.log(`Would delete: ${run.id} - ${run.name} (${run.created_at})`);
+                } else {
+                  await github.rest.actions.deleteWorkflowRun({
+                    owner,
+                    repo,
+                    run_id: run.id
+                  });
+                  console.log(`Deleted: ${run.id} - ${run.name}`);
+                }
+                deleted++;
+              }
+              
+              // If not dry run, stay on page 1 since we're deleting
+              if (dryRun) page++;
+            }
+            
+            console.log(`\n${dryRun ? 'Would delete' : 'Deleted'} ${deleted} workflow runs`);
