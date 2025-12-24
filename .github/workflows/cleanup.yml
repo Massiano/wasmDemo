@@ -1,11 +1,7 @@
 name: Cleanup Old Runs
 
 on:
-  # Run manually
   workflow_dispatch:
-  # Run automatically at midnight every Sunday
-  schedule:
-    - cron: '0 0 * * 0'
 
 jobs:
   del_runs:
