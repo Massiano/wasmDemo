@@ -1,36 +1,35 @@
 name: Build AssemblyScript Wasm
-
 on:
   push:
     branches: [ main ]
   workflow_dispatch:
-
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-
       - name: Install AssemblyScript and Build
         run: |
           npm init -y
           npm install assemblyscript
           # -O3: Maximum optimization
-          # --noAssert: Remove bounds checking for speed (be careful with indices)
-          # --runtime stub: Minimal runtime for computation-only Wasm
+          # --noAssert: Remove bounds checking for speed
+          # --runtime stub: Minimal runtime, no GC
+          # --memoryBase 0: Start memory layout at 0
+          # --initialMemory 8192: 512 MB initial (8192 * 64KB pages)
+          # --maximumMemory 8192: Fixed size, no growth
           npx asc cwt.ts \
             -o cwt.wasm \
-            --optimize \
             -O3 \
             --noAssert \
             --runtime stub \
-            --exportRuntime
-
+            --memoryBase 0 \
+            --initialMemory 8192 \
+            --maximumMemory 8192
       - name: Upload Wasm Artifact
         uses: actions/upload-artifact@v4
         with:
