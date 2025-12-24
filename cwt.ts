@@ -1,19 +1,26 @@
+// Memory Offsets
+const AUDIO_PTR: u32 = 65536;    // 64 KiB
+const FREQ_LIST_PTR: u32 = 1024; // 1 KiB
+const OUTPUT_PTR: u32 = 67108864; // 64 MiB
 const MEM_LIMIT: u32 = 536870912; // 512 MiB
-const AUDIO_PTR: u32 = 65536;
-const OUTPUT_PTR: u32 = 67108864; 
-const FREQ_LIST_PTR: u32 = 1024;
 
-export function computeCWT(): i32 {
-  const tStart = load<u32>(0);
-  const tEnd = load<u32>(4);
-  const freqCount = load<u32>(8);
-  const outputMode = load<u32>(12); // 0: Mag, 1: Phase
-
-  const numSamples = tEnd - tStart;
-  if (OUTPUT_PTR + (numSamples * freqCount * 4) > MEM_LIMIT) return -1;
-
+/**
+ * Perform CWT. 
+ * Heavy data is pulled from fixed memory offsets.
+ * Parameters are passed as arguments for reliability.
+ */
+export function computeCWT(
+  tStart: u32, 
+  tEnd: u32, 
+  freqCount: u32, 
+  outputMode: u32
+): i32 {
   const sampleRate: f32 = 48000.0;
-  const w0: f32 = 6.0; 
+  const w0: f32 = 6.0;
+  const numSamples = tEnd - tStart;
+
+  // Safety check
+  if (OUTPUT_PTR + (numSamples * freqCount * 4) > MEM_LIMIT) return -1;
 
   for (let fIdx: u32 = 0; fIdx < freqCount; fIdx++) {
     const freq = load<f32>(FREQ_LIST_PTR + (fIdx * 4));
@@ -27,6 +34,7 @@ export function computeCWT(): i32 {
 
       for (let k = -window; k <= window; k++) {
         const inputIdx = <i32>t + k;
+        // Standard 5-min audio limit check
         if (inputIdx >= 0 && inputIdx < 14400000) {
           const signal = load<f32>(AUDIO_PTR + (inputIdx * 4));
           const x = (<f32>k / sampleRate) / scale;
@@ -37,8 +45,8 @@ export function computeCWT(): i32 {
         }
       }
 
-      const outIdx = OUTPUT_PTR + (((fIdx * numSamples) + (t - tStart)) * 4);
-      store<f32>(outIdx, outputMode == 0 
+      const outOffset = OUTPUT_PTR + (((fIdx * numSamples) + (t - tStart)) * 4);
+      store<f32>(outOffset, (outputMode == 0) 
         ? Mathf.sqrt(realSum * realSum + imagSum * imagSum) 
         : Mathf.atan2(imagSum, realSum)
       );
