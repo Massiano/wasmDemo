@@ -9,7 +9,10 @@
 // AUDIO_END - ... : CWT magnitude output (f32[n_freqs × n_time_samples])
 // ============================================================
 
+
 // Header offsets (bytes)
+const HEADER_START: usize = 1024; // Move everything up!
+
 const HEADER_SAMPLE_RATE: usize = 0;      // f32
 const HEADER_N_SAMPLES: usize = 4;         // u32
 const HEADER_N_FREQS: usize = 8;           // u32
