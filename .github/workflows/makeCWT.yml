@@ -23,8 +23,8 @@ jobs:
           # -O3: Maximum optimization
           # --noAssert: Remove bounds checking for speed (be careful with indices)
           # --runtime stub: Minimal runtime for computation-only Wasm
-          npx asc index.ts \
-            -o index.wasm \
+          npx asc cwt.ts \
+            -o cwt.wasm \
             --optimize \
             -O3 \
             --noAssert \
@@ -35,4 +35,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: wasm-binary
-          path: index.wasm
+          path: cwt.wasm
