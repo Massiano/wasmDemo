@@ -1,7 +1,7 @@
 name: Build CWT WASM
 
 on:
-  workflow-dispatch:
+  workflow_dispatch:
 
 jobs:
   build:
