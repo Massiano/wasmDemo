@@ -19,7 +19,7 @@ jobs:
 
       - name: Compile WASM
         run: |
-          npx asc assembly/index.ts \
+          npx asc cwt.ts \
             --target release \
             --outFile cwt.wasm \
             --initialMemory 8500 \
