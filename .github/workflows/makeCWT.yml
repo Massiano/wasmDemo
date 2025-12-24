@@ -19,9 +19,7 @@ jobs:
 
       - name: Compile WASM
         run: |
-          # Calculate pages: 500MB / 64KB per page = ~8000 pages
-          # We set max memory to slightly higher to be safe (e.g., 8500 pages)
-          npx asc cwt.ts \
+          npx asc assembly/index.ts \
             --target release \
             --outFile cwt.wasm \
             --initialMemory 8500 \
