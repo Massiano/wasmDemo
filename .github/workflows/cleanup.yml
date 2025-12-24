@@ -1,19 +1,33 @@
-name: Cleanup Old Runs
+name: Nuke All Finished Runs
 
 on:
   workflow_dispatch:
 
 jobs:
-  del_runs:
+  delete_all:
     runs-on: ubuntu-latest
     permissions:
       actions: write
       contents: read
     steps:
-      - name: Delete workflow runs
-        uses: Mattraks/delete-workflow-runs@v2
-        with:
-          token: ${{ github.token }}
-          repository: ${{ github.repository }}
-          retain_days: 30
-          keep_minimum_runs: 5
+      - name: Delete all completed runs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          echo "Starting deletion of ALL finished runs..."
+          
+          # Loop until no runs remain
+          while true; do
+            # List run IDs that are 'completed' (limit 100 at a time to prevent API timeouts)
+            run_ids=$(gh run list --status completed --limit 100 --json databaseId --jq '.[].databaseId')
+            
+            # Break the loop if no runs are found
+            if [ -z "$run_ids" ]; then
+              echo "No more finished runs found."
+              break
+            fi
+            
+            echo "Deleting batch of runs..."
+            # Use xargs to delete the found IDs
+            echo "$run_ids" | xargs -I {} gh run delete "{}"
+          done
