@@ -1,1 +1,34 @@
+name: Build DIAG WASM
 
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install AssemblyScript
+        run: npm install --save-dev assemblyscript
+
+      - name: Compile WASM
+        run: |
+          npx asc diag.ts \
+            --target release \
+            --outFile cwt.wasm \
+            --initialMemory 8500 \
+            --maximumMemory 8500 \
+            --use abort= \
+            --optimize
+            
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: diag-build
+          path: diag.wasm
