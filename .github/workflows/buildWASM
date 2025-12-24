@@ -9,7 +9,7 @@ on:
       output:
         description: 'Output file'
         required: true
-        default: 'cwt.wasm'
+        default: 'index.wasm'
 jobs:
   build:
     runs-on: ubuntu-latest
