@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { margin: 0; background: #000; }
+    canvas { position: absolute; top: 50px; left: 50px; }
+  </style>
+</head>
+<body>
+<canvas id="c" width="400" height="400"></canvas>
+<script>
+const vsSource = `
+  attribute vec2 aPos;
+  attribute vec3 aColor;
+  varying vec3 vColor;
+  void main() {
+    gl_Position = vec4(aPos, 0.0, 1.0);
+    vColor = aColor;
+  }
+`;
+
+const fsSource = `
+  precision mediump float;
+  varying vec3 vColor;
+  void main() {
+    gl_FragColor = vec4(vColor, 1.0);
+  }
+`;
+
+async function main() {
+  const res = await fetch('build/release.wasm');
+  const wasm = await WebAssembly.instantiate(await res.arrayBuffer());
+  const { getVerticesPtr, getVerticesLen, memory } = wasm.instance.exports;
+
+  const ptr = getVerticesPtr();
+  const len = getVerticesLen();
+  const verts = new Float32Array(memory.buffer, ptr, len);
+
+  const canvas = document.getElementById('c');
+  const gl = canvas.getContext('webgl');
+  gl.clearColor(0.1, 0.1, 0.1, 1.0);
+  gl.clear(gl.COLOR_BUFFER_BIT);
+
+  // Compile shaders
+  const vs = gl.createShader(gl.VERTEX_SHADER);
+  gl.shaderSource(vs, vsSource);
+  gl.compileShader(vs);
+
+  const fs = gl.createShader(gl.FRAGMENT_SHADER);
+  gl.shaderSource(fs, fsSource);
+  gl.compileShader(fs);
+
+  const prog = gl.createProgram();
+  gl.attachShader(prog, vs);
+  gl.attachShader(prog, fs);
+  gl.linkProgram(prog);
+  gl.useProgram(prog);
+
+  // Buffer
+  const buf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  gl.bufferData(gl.ARRAY_BUFFER, verts, gl.STATIC_DRAW);
+
+  const aPos = gl.getAttribLocation(prog, 'aPos');
+  const aColor = gl.getAttribLocation(prog, 'aColor');
+
+  const stride = 5 * 4; // 5 floats * 4 bytes
+  gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, stride, 0);
+  gl.enableVertexAttribArray(aPos);
+  gl.vertexAttribPointer(aColor, 3, gl.FLOAT, false, stride, 2 * 4);
+  gl.enableVertexAttribArray(aColor);
+
+  gl.drawArrays(gl.TRIANGLES, 0, 3);
+}
+main();
+</script>
+</body>
+</html>

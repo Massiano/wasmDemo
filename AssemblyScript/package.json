@@ -1,0 +1,8 @@
+{
+  "scripts": {
+    "asbuild": "asc assembly/index.ts -o build/release.wasm -O3 --exportRuntime"
+  },
+  "devDependencies": {
+    "assemblyscript": "^0.27.29"
+  }
+}
