@@ -1,0 +1,35 @@
+name: Build WASM from Folder
+
+on:
+  workflow_dispatch:
+    inputs:
+      folder:
+        description: 'Project folder path'
+        required: true
+        default: 'AssemblyScript'
+        type: string
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ github.event.inputs.folder }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - run: npm install
+
+      - run: mkdir -p build && npm run asbuild
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wasm-build-${{ github.event.inputs.folder }}
+          path: |
+            ${{ github.event.inputs.folder }}/build/release.wasm
+            ${{ github.event.inputs.folder }}/index.html
